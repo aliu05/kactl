@@ -1,3 +1,17 @@
-# Hashes a file, ignoring all whitespace and comments. Use for
-# verifying that code was correctly typed.
-cpp -dD -P -fpreprocessed | tr -d '[:space:]'| md5sum |cut -c-6
+# This is heavily modified from the original version
+
+#!/bin/bash
+# Create a temporary file with a unique name
+TMPFILE=$(mktemp)
+
+# Read the input file and process it
+cat $1 | tr -d '\r' | tr '\n' '|' > "$TMPFILE"
+
+# First hash
+cat "$TMPFILE" | md5sum | cut -c-6
+
+# Second hash with preprocessing
+g++-14 -E -P -fpreprocessed -x c++ "$TMPFILE" | md5sum | cut -c-6
+
+# Clean up
+rm "$TMPFILE"
